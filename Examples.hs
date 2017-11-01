@@ -9,6 +9,23 @@ exitOn True  = return Exit
 exitOn False = return Loop
 
 
+
+myRnot :: Qubit -> Circ RecAction
+myRnot q1 = do
+    gate_V q1
+    gate_V q1
+    measure q1
+    return Exit
+
+myRnotOne :: Qubit -> Circ RecAction
+myRnotOne q1 = do
+    qnot q1
+    gate_V q1
+    gate_V q1
+    measure q1
+    return Exit
+
+
 myfourthcirc :: Qubit -> Circ RecAction
 myfourthcirc q1 = do
     hadamard q1
@@ -111,7 +128,7 @@ groverNaive (q1,q2,q3) = do
     qnot_at q3 `controlled` [q1, q2]
     --gate_X_at q2
     hadamard_at q1
-    hadamard_at q2
+    hadamard_at q2  
     gate_X_at q1
     gate_X_at q2
     hadamard_at q2
