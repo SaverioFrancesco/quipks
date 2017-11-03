@@ -206,7 +206,9 @@ enumNodes g1@(LabGraph gr lab)= do
         vert= vertices g1
         numOfQB= length $ lab $ vert!!1
         cou= length vert
-        output = "s:[1.."++(show cou)++"] init 1;"
+        comment= "\n//" ++ (concat $ map (\x -> "state:"++(show x) ++" bits : " ++ (concat $ map (\y -> show (fst y) ++ " has value " ++ (show (snd y))) $ lab x) ++ "\n //"  ) vert) ++ "\n"
+        output = "s:[1.."++(show cou)++"] init 1;" ++comment
+
 
 
 graphToPRISM g1@(LabGraph gr lab) = "dtmc\n module quipksmodel\n "++result ++"\n"++
