@@ -1,6 +1,18 @@
 module Examples where
 
 import Quipper
+{-
+setup code:
+-}
+
+inputCirc = myRnot
+
+            --recCirc'
+            --groverSix
+            --testMatrix_3  
+            --test_if --recCirc'
+
+-----------------------------------------------------------------------------------------------------------------
 
 data RecAction = Loop | Exit deriving Show
 

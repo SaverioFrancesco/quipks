@@ -1,6 +1,10 @@
+
+{-stack setup problems forced a copy of the following entangle code. (tofix) -}
+
 {-# LANGUAGE FlexibleContexts      #-}
 {-# LANGUAGE FlexibleInstances     #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
+
 
 module QMatrixQuipks (
     MeasureKind(..),
@@ -59,10 +63,6 @@ class (Num a, Num (m a)) => QMatrix m a where
         swapMatrix 3 2 = 1
         swapMatrix 4 4 = 1
         swapMatrix _ _ = 0
-
-        
-
-   
 
     -- |measure is the measure matrix
     -- measure UL is [1, 0; 0, 0] whereas measure BR is [0, 0; 0, 1]
@@ -145,7 +145,6 @@ instance Num a => QMatrix Matrix a where
     zero r c = Data.Matrix.zero (downcast r) (downcast c)
 
     matrix r c f = Data.Matrix.matrix (downcast r) (downcast c) (\(y, x) -> f (fromIntegral y) (fromIntegral x))
-
 
      
     (<->) = (Data.Matrix.<->)

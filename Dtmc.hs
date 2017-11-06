@@ -8,22 +8,9 @@ import           Data.Matrix hiding (identity, matrix, zero, (<->), (<|>))
 import qualified Data.Matrix
 import           Expr
 import BitQubitId
-
 import QMatrixQuipks
 
-
-vector :: (Num a) => Integer -> (Integer -> a) -> Matrix a
-vector n f = matrix n 1 ( \x y -> ( f x )) 
-
-zeroVector :: (Num a) => Matrix a
-zeroVector = vector 2 (\ x -> ( 0 ))
-
-e1C :: (Num a) => Matrix a
-e1C  = vector 2 (\ x -> if x==1 then 1 else 0)
-
-e2C :: (Num a) => Matrix a
-e2C  = vector 2 (\ x -> if x==2 then 1 else 0)
-
+{-util-}
 log2 :: Int -> Int
 log2 1 = 0
 log2 2 = 1
@@ -38,20 +25,25 @@ log2 n
                             (e, a) | base*a > m -> (2*e, a)
                                    | otherwise  -> (2*e+1,a*base)
 
+{-state vector rappresentation structures-}
+vector :: (Num a) => Integer -> (Integer -> a) -> Matrix a
+vector n f = matrix n 1 ( \x y -> ( f x )) 
+
+zeroVector :: (Num a) => Matrix a
+zeroVector = vector 2 (\ x -> ( 0 ))
+
+e1C :: (Num a) => Matrix a
+e1C  = vector 2 (\ x -> if x==1 then 1 else 0)
+
+e2C :: (Num a) => Matrix a
+e2C  = vector 2 (\ x -> if x==2 then 1 else 0)
+
 unQubitId = log2.downcast.toSize 
 
 initialState 1 = e1C
 initialState n = e1C `kronecker` (initialState (n-1)) 
 
-
----O-O-O-O-O-O-O-O-O-O-O-O-O-O-O-O-O-O-O-O-O-O-O-O-O-O-O-O-O-O-O-O-O-O-O-O-O-O-O-O-O-O-O-O-O-O-O-O-O-O-O-O-O-O
-
-gateMulti l1 m n = m1 * gate * m1 --identityOnNQB n
-    where m1= swap_multi perm
-          perm= l2 ++ [  i | i <- [0..n-1], not $ any (\x-> x==i) l2 ]
-          l2= map ( \x-> x-1) l1
-          gate= unaryGateAt 1 m n
-          
+       
 ------------------------------------------------------------------------------------------------------------
 --swap_multi is an implementation of matlab code for swap by Linda A.
 toBin :: Int -> [Int]
@@ -92,9 +84,6 @@ unaryGateAt q_id m num = if q_id== num
                          else  rep (q_id-1)  `kronecker` m `kronecker`  (  rep (num - q_id)) 
 
 multiGateAtBottom m dim num =   ( rep (num - dim)) `kronecker` m
---multiGateAt q_id m num = if q_id== num 
---                         then rep (num-(log2 $ length m))  `kronecker` m 
---                         else rep (q_id-(log2 $ length m))  `kronecker` m `kronecker` (  rep (num - q_id))
 
 cGateMulti l1 l3 m n = m1 * gate * m1
   where
@@ -105,15 +94,19 @@ cGateMulti l1 l3 m n = m1 * gate * m1
           cm = cGate (length l3) m
           gate = multiGateAtBottom cm (1+(length l3)) n
 
-
+gateMulti l1 m n = m1 * gate * m1 --identityOnNQB n
+    where m1= swap_multi perm
+          perm= l2 ++ [  i | i <- [0..n-1], not $ any (\x-> x==i) l2 ]
+          l2= map ( \x-> x-1) l1
+          gate= unaryGateAt 1 m n
+   
 
 cGate :: (Fractional a, Floating a, Num a) => Int -> Matrix (Complex a) -> Matrix (Complex  a)
 cGate n_controls gate = (identity (2^(n) -2) <|> zero (2^(n) -2) 2) <-> (zero 2 (2^(n) -2) <|> gate)
     where n= n_controls+1
 
 
----O-O-O-O-O-O-O-O-O-O-O-O-O-O-O-O-O-O-O-O-O-O-O-O-O-O-O-O-O-O-O-O-O-O-O-O-O-O-O-O-O-O-O-O-O-O-O-O-O-O-O-O-O-O
-
+-------------------------------------------------------------------------------------------------------------------
 getProbabilityOfZERO :: (Num a) => Int -> Matrix a -> a
 getProbabilityOfZERO i m = foldl  (\a j -> (j^2)+a ) 0 ([vect!!u  | u <- positions])
                 where{-i in 1..leng -} 
@@ -128,7 +121,7 @@ getProbabilityOfONE i m = foldl  (\a j -> (j^2)+a ) 0 ([vect!!u  | u <- position
                     leng= log2 $ nrows m
                     positions = [  ind | ind <-[0..( (nrows m) -1)], odd (div ind (2^(leng- i)))  ]
 
-
+{-stack setup problems forced a copy of the following entangle code-}
 
 nameToMatrix :: ( Floating a, Fractional a) => String -> Matrix (Complex a)
 nameToMatrix "not"  = pauliX

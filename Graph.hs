@@ -20,6 +20,8 @@ import           Data.Matrix hiding (identity, (!), matrix, zero, (<->), (<|>))
 import           QMatrixQuipks
 import Dtmc
 
+{-Dot file compiler, by Luca Foschiani-}
+
 type Vertex = Int
 type Table a = Array Vertex [Edge]
 type Graph = Table [(Edge, Vertex)]
@@ -161,6 +163,8 @@ ________        .__        __
 {-
 Author: Francesco Saverio Comisso
 Mail: mitramdhir[at]gamil.com
+
+Core code of the tranlator.
 -}
 
 

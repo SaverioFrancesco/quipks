@@ -1,8 +1,10 @@
+
+
 SHELL=C:/Windows/System32/cmd.exe
 
 edit:  
 	stack ghc Main.hs
-	./Main.exe model.pm graph.dot
+	./Main.exe model graph
 	cat model.pm
 
 clean: 
