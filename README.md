@@ -29,7 +29,7 @@ this will produce and run an executable file that will produce two different fil
 ### PRISM
 
 The file model.pm contains a discrete markov chain representing the computation of the circuit.
-You can use [PRISM](http://www.prismmodelchecker.org/) to load the file and check some LTL propreties like
+You can use [PRISM](http://www.prismmodelchecker.org/) to load the file and check some LTL properties like
 ```
 P>=1 [ F ( G (s=9)) ]
 ```
@@ -39,7 +39,7 @@ Please note that the states are all model in one variable called s.
  
  Quipks put a comment into model.pm file a labeling of the states to discriminate the various states according whit the model described into model.dot
  
-For istance s=9 is not in general a terminating state.
+For instance s=9 is not in general a terminating state.
 
 ### Graphviz
 
