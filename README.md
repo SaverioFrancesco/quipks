@@ -4,41 +4,42 @@ This pakage is tool for model checking quantum circuits that convert quipper cod
 
 The software requires some Cabal packages to be run, all the required dependencies are listed in "quipks.cabal".
 
-The project is based on stack https://docs.haskellstack.org/en/stable/README/
+The project is based on [stack] (https://docs.haskellstack.org/en/stable/README/)
 
-and use functionalities of entangle https://github.com/miniBill/entangle
+and use functionalities of [entangle] (https://github.com/miniBill/entangle)
 
 To use quipks install stack
 then run the following commands
 
+```
 stack setup
-
+```
 then you can run 
-
+```
 stack build
-
+```
 or better just run
-
+```
 make
-
+```
 this will produce and run an executable file that will produce two different files (.pm and .dot)
 
 The file model.pm contains a discrete markov chain rappresenting the computation of the circuit.
-You can use PRISM http://www.prismmodelchecker.org/ to load the file and check some LTL propreties like
-
+You can use [PRISM] (http://www.prismmodelchecker.org/) to load the file and check some LTL propreties like
+```
 P>=1 \[ F ( G (s=9)) \]
-
+```
 Please note that the states are all model in one variable called s.
 For istance s=9 is not in general a terminating state. 
 Quipks put a comment into the .pm file a labeling of the states to discriminate the various states according whit the model described into model.dot
 
 To see the actual  Kripke structure in a readable way type
-
+```
 dot -Tps model.dot -o mygraph.pdf  
-
+```
 and then open your pdf file.  
 
-You'll need Graphviz to visualize the .dot files: http://www.graphviz.org/    
+You'll need [Graphviz] (http://www.graphviz.org/) to visualize the .dot files:     
 
 In the Kripke structure described the labels of the states correspond to the bits (not qubits).
 For each non mesured qubit there is a bit containding zero.
