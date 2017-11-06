@@ -1,6 +1,7 @@
 # quipks
 
-This pakage is tool for model checking quantum circuits that convert quipper code into discrete markov chain.
+This pakage is tool for model checking quantum circuits that convert Quipper code into discrete markov chain.
+You can get Quipper [here](http://www.mathstat.dal.ca/~selinger/quipper/).
 
 The software requires some Cabal packages to be run, all the required dependencies are listed in "quipks.cabal".
 
