@@ -9,7 +9,7 @@ The project is based on [stack](https://docs.haskellstack.org/en/stable/README/)
 
 and use functionalities of [entangle](https://github.com/miniBill/entangle)
 
-###Installation
+### Installation
 To use quipks you need `stack`
 then run the following commands
 
@@ -26,7 +26,7 @@ make
 ```
 this will produce and run an executable file that will produce two different files (model.pm and model.dot)
 
-###PRISM
+### PRISM
 
 The file model.pm contains a discrete markov chain rappresenting the computation of the circuit.
 You can use [PRISM](http://www.prismmodelchecker.org/) to load the file and check some LTL propreties like
@@ -37,7 +37,7 @@ Please note that the states are all model in one variable called s.
 For istance s=9 is not in general a terminating state. 
 Quipks put a comment into model.pm file a labeling of the states to discriminate the various states according whit the model described into model.dot
 
-###Graphviz
+### Graphviz
 
 To see the actual  Kripke structure in a readable way type
 ```
