@@ -170,7 +170,7 @@ Core code of the tranlator.
 
 data ActionKind = Shure | ZeroMesure | OneMesure
 
-traverseArc:: Edge -> LabGraph t t1 -> Int -> (Int, Matrix (Complex Float), ActionKind)
+traverseArc:: Edge -> LabGraph t t1 -> Int -> (Int, Matrix (Complex Double), ActionKind)
 
 traverseArc  (GateEdge a (name, qubits1@(x:qx),  qubits2) b) g1 countqbits =
              if length qubits2 > 0 
@@ -210,7 +210,7 @@ enumNodes g1@(LabGraph gr lab)= do
         vert= vertices g1
         numOfQB= length $ lab $ vert!!1
         cou= length vert
-        comment= "\n//" ++ (concat $ map (\x -> "state:"++(show x) ++" bits : " ++ (concat $ map (\y -> show (fst y) ++ " has value " ++ (show (snd y))) $ lab x) ++ "\n //"  ) vert) ++ "\n"
+        comment= "\n//" ++ (concat $ map (\x -> ", state:"++(show x) ++" bits : " ++ (concat $ sort $ map (\y -> ", "++ show (fst y) ++ " has value " ++ (show (snd y))) $ lab x) ++ "\n //"  ) vert) ++ "\n"
         output = "s:[1.."++(show cou)++"] init 1;" ++comment
 
 

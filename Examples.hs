@@ -5,7 +5,7 @@ import Quipper
 setup code:
 -}
 
-inputCirc = myRnot
+inputCirc = branchCirc -- groverRec --branchCirc
 
             --recCirc'
             --groverSix
@@ -40,8 +40,6 @@ myRnotOne q1 = do
 
 myfourthcirc :: Qubit -> Circ RecAction
 myfourthcirc q1 = do
-    hadamard q1
-    qnot q1
     hadamard q1
     qnot q1
     return Exit

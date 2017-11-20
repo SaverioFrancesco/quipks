@@ -61,7 +61,7 @@ toDec lx = foldl (\acc x -> acc * 2 + x) 0 lx
 permute xl [] = []
 permute xl perm@(y:yl) = (xl!!y) : (permute xl yl)  
 
-swap_multi::[Int]->Matrix (Complex Float)
+swap_multi:: ( Floating a, Fractional a) =>[Int]->Matrix (Complex a)
 swap_multi t = fromLists  $ map ins origin 
     where origin= [ toDec $ permute ( toBinL (i-1) (length t) )  t | i<-[1..2^(length t)] ]
           ins k = (\l-> ( take (k) (repeat 0) ) ++ l) . ( 1.0 :).(\l -> l ++ (take ( (2^(length t))-1-k) (repeat 0) ) ) $ []
