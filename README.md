@@ -20,7 +20,7 @@ then you can run
 ```
 stack build
 ```
-or better just run
+and finaly
 ```
 make
 ```
