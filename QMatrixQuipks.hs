@@ -11,7 +11,7 @@ module QMatrixQuipks (
 
     QMatrix, QCMatrix,
     kronecker, identity, matrix, zero, hadamard,
-    pauliX, pauliZ, pauliY,swap, swapSqrt, phaseShift, measure, cnot, sqrtNot,
+    pauliX, pauliZ, pauliY,swap, swapSqrt, phaseShift, measure, sqrtNot,
     (<->), (<|>), downcast
     ) where
 
@@ -75,13 +75,13 @@ class (Num a, Num (m a)) => QMatrix m a where
         in
             matrix 2 2 (gen k)
 
-    cnot:: m a
+   {- cnot:: m a
     cnot = matrix 4 4 n where
         n 2 2 =1
         n 1 1 =1
         n 3 4 = 1
         n 4 3 = 1
-        n _ _ = 0 
+        n _ _ = 0 -}
 
 
 class (Fractional a, Floating a, QMatrix m (Complex a)) => QCMatrix m a where

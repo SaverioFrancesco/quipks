@@ -6,7 +6,6 @@ edit:
 	stack ghc Main.hs
 	./Main.exe model graph
 	cat model.pm
-
 clean: 
 	rm *o 
 	rm *hi 

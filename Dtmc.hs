@@ -1,6 +1,6 @@
 {-# LANGUAGE FlexibleContexts      #-}
 {-# LANGUAGE FlexibleInstances     #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
+
 module Dtmc where
 
 import           Complex
@@ -61,16 +61,18 @@ toDec lx = foldl (\acc x -> acc * 2 + x) 0 lx
 permute xl [] = []
 permute xl perm@(y:yl) = (xl!!y) : (permute xl yl)  
 
-swap_multi::[Int]->Matrix (Complex Float)
-swap_multi t = fromLists  $ map ins origin 
-    where origin= [ toDec $ permute ( toBinL (i-1) (length t) )  t | i<-[1..2^(length t)] ]
+swap_multi::( Floating a, Fractional a, Ord a) => [Int]->Matrix (Complex a)
+swap_multi t1 = fromLists  $ map ins origin 
+    where 
+          t= t1--map  (\x -> x - 1) t1
+          origin= [ toDec $ permute ( toBinL (i-1) (length t) )  t | i<-[1..2^(length t)] ]
           ins k = (\l-> ( take (k) (repeat 0) ) ++ l) . ( 1.0 :).(\l -> l ++ (take ( (2^(length t))-1-k) (repeat 0) ) ) $ []
 
 ---------------------------------------------------------------------------------------------------------------------
-
-normalizeStateVector vm =  fmap (\x-> x /scaling_factor ) vm
-        where scaling_factor = sqrt $ foldl (+) 0 (map (\x-> x*x) $ toList vm)  
-
+normalizeStateVector :: ( Floating a, Fractional a, Ord a) => Matrix (Complex a) ->Matrix (Complex a)
+normalizeStateVector vm =  fmap (\x@(a:+b) -> if a==0.0 && b== 0.0 then (x/ (epsilon :+ epsilon)) else  (x / scaling_factor ) ) vm
+        where scaling_factor@( a :+ b) = sqrt $ foldl (+) 0 (map (\x-> x*x) $ toList vm) 
+              epsilon= 0.00000000001 --Parameter for approximating small scaling factor (you don't want to divide by zero)
 
 identityOnNQB n = identity $ 2^n
 
@@ -78,27 +80,36 @@ rep 0 = identity 1
 rep 1 = identity 2
 rep n = (identity 2) `kronecker` ( rep (n-1))
 
+
+unaryGateAt ::  ( Num a) => Int -> Matrix (Complex a)-> Int -> Matrix (Complex  a) 
+unaryGateAt 1 m 1 = m  
 unaryGateAt 1 m num = m `kronecker`  ( rep (num - 1))  
-unaryGateAt q_id m num = if q_id== num 
+unaryGateAt q_id m num = if q_id >num then error $ "qbit index "++(show q_id) ++ " out of range [1.."++(show num)++"]\n"
+                         else
+                         if q_id== num 
                          then  rep (num-1) `kronecker` m
                          else  rep (q_id-1)  `kronecker` m `kronecker`  (  rep (num - q_id)) 
 
+multiGateAtBottom ::  ( Num a) =>  Matrix (Complex a)-> Int-> Int -> Matrix (Complex  a)
 multiGateAtBottom m dim num =   ( rep (num - dim)) `kronecker` m
+
+--cGateMulti ::  [Int] -> [Int] ->  Matrix (Complex a)-> Int -> Matrix (Complex  a)
 
 cGateMulti l1 l3 m n = m1 * gate * m1
   where
-          m1= swap_multi perm
-          perm=  [  i | i <- [0..n-1], not $ any (\x-> x==i) l2 ] ++ l2
-          l2= map ( \x-> x-1) $ lapp
+          m1= swap_multi perm1
+          perm = lapp ++ [  i | i <- [1..n], not $ any (\x-> x==i) lapp ]
+          perm1= map ( \x-> x-1) perm
           lapp = l1 ++ l3
           cm = cGate (length l3) m
           gate = multiGateAtBottom cm (1+(length l3)) n
 
-gateMulti l1 m n = m1 * gate * m1 --identityOnNQB n
-    where m1= swap_multi perm
-          perm= l2 ++ [  i | i <- [0..n-1], not $ any (\x-> x==i) l2 ]
-          l2= map ( \x-> x-1) l1
-          gate= unaryGateAt 1 m n
+--gateMulti ::  [Int] -> Matrix (Complex a)-> Int -> Matrix (Complex  a)
+gateMulti l1 m n =  m1 *gate *m1 -- * gate * m1 
+    where m1= swap_multi perm1
+          perm= l1 ++ [  i | i <- [1..n], not $ any (\x-> x==i) l1 ]
+          perm1= map ( \x-> x-1) perm
+          gate= unaryGateAt 1 m (n-1)
    
 
 cGate :: (Fractional a, Floating a, Num a) => Int -> Matrix (Complex a) -> Matrix (Complex  a)
@@ -131,7 +142,7 @@ nameToMatrix "Z"    = pauliZ
 nameToMatrix "H"    = hadamard
 nameToMatrix "W"    = swapSqrt
 nameToMatrix "swap" = swap
-nameToMatrix "cnot" = cnot
+nameToMatrix "cnot" = cGate 1 pauliX
 nameToMatrix "V" =  sqrtNot
 nameToMatrix n      = error $ "Gate \"" ++ show n ++ "\" is not supported yet"
 

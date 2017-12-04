@@ -121,7 +121,7 @@ showGraphViz (LabGraph gr lab)  =
         showEdge (GateEdge from t to) = show from ++ " -> " ++ show to ++ " [label = \"" ++ showTripleGate t ++ "\"];\n"
         showEdge (MeasureEdge from t to) = show from ++ " -> " ++ show to ++ " [label = \"" ++ showTripleMeasure t ++ "\"];\n"
         showEdge (LoopEdge from t) = show from ++ " -> " ++ "1" ++ " [label = \"" ++ t ++ "\"];\n"
-        showNode v = show v ++ " [label = " ++  (show $ intercalate ", " $ map showPair $ sort $ lab v) ++ "];\n"
+        showNode v = show v ++ " [label = "  ++  (show $ intercalate ", " $ map showPair $ sort $ lab v) ++ "];\n"
         showTripleGate (gate,qubits1,qubits2) = "Gate '" ++ gate ++ "' on " ++ showQubitList qubits1 ++
                                                 (if length qubits2 > 0 then " controls " else "") ++ showQubitList qubits2
         showTripleMeasure (qubit,bit) = "Measure " ++ show qubit ++ " -> " ++ show bit
@@ -167,26 +167,30 @@ Mail: mitramdhir[at]gamil.com
 Core code of the tranlator.
 -}
 
+debugMode=False
+
 
 data ActionKind = Shure | ZeroMesure | OneMesure
 
-traverseArc:: Edge -> LabGraph t t1 -> Int -> (Int, Matrix (Complex Float), ActionKind)
+traverseArc:: Edge -> LabGraph t t1 -> Int -> (String,Int, Matrix (Complex Double), ActionKind)
 
-traverseArc  (GateEdge a (name, qubits1@(x:qx),  qubits2) b) g1 countqbits =
+traverseArc  (GateEdge a (name, qubits1@(x:qx),  qubits2@(y:qy)) b) g1 countqbits =
              if length qubits2 > 0 
-                then (b, cGateMulti (map (\x->unQubitId x) qubits1) (map (\x->unQubitId x) qubits2) (nameToMatrix name) countqbits , Shure) 
+                then 
+                if length qubits1 ==1 then (name,b,  cGateMulti  [(unQubitId x)] (map (\x->unQubitId x) qubits2) (nameToMatrix name) countqbits , Shure) 
+                else (name,b,  cGateMulti (map (\x->unQubitId x) qubits1) (map (\x->unQubitId x) qubits2) (nameToMatrix name) countqbits, Shure) 
                 else
                 if length qubits1 ==1 
-                    then (b, unaryGateAt (unQubitId x) (nameToMatrix name) countqbits , Shure) --nameToMatrix name
-                        else (b, gateMulti (map (\x->unQubitId x) qubits1) (nameToMatrix name) countqbits , Shure)
+                    then (name, b, unaryGateAt (unQubitId x) (nameToMatrix name) countqbits {- identityOnNQB countqbits -} , Shure) --nameToMatrix name
+                    else (name,b, gateMulti (map (\x->unQubitId x) qubits1) (nameToMatrix name) countqbits , Shure)
                                         
 traverseArc  (MeasureEdge a info_mesure@(qbit_id, bit_id) b) g1 countqbits = 
             if (valueOfBitInState g1 bit_id b)==0 
-                then (b, unaryGateAt (unQubitId qbit_id) (measure UL) countqbits, ZeroMesure) 
-                else (b, unaryGateAt (unQubitId qbit_id) (measure BR) countqbits, OneMesure)
+                then ("mesure UL ",b, unaryGateAt (unQubitId qbit_id) (measure UL) countqbits, ZeroMesure) 
+                else ("mesure BR ",b, unaryGateAt (unQubitId qbit_id) (measure BR) countqbits, OneMesure)
 
 traverseArc  (LoopEdge a string) g1 countqbits =  
-                (1 , identityOnNQB countqbits, Shure)
+                ("notOpp ",1 , identityOnNQB countqbits, Shure)
 
 
 valueOfBitInState ::LabGraph t t1 -> BitId->Vertex ->Int
@@ -205,37 +209,41 @@ printRow n lx = writer (n, if(length lx == 0) then "[] s=" ++ (show n) ++ " -> 1
             vp ((p,nn):l:lx) = (show p) ++ ": (s'=" ++ (show nn) ++ ") + " ++ (vp $ l: lx)
 
 enumNodes g1@(LabGraph gr lab)= do
-                    writer(numOfQB,output)
+                    writer(numOfQB +1 {- it counts one less do not know...-},output)
     where
         vert= vertices g1
         numOfQB= length $ lab $ vert!!1
         cou= length vert
-        comment= "\n//" ++ (concat $ map (\x -> "state:"++(show x) ++" bits : " ++ (concat $ map (\y -> show (fst y) ++ " has value " ++ (show (snd y))) $ lab x) ++ "\n //"  ) vert) ++ "\n"
+        comment= "\n//" ++ (concat $ map (\x -> " state: "++(show x) ++" bits : " ++ (concat $ map (\y -> show (fst y) ++ " has value " ++ (show (snd y))) $ lab x) ++ "\n// "  ) vert) ++ "\n"
         output = "s:[1.."++(show cou)++"] init 1;" ++comment
 
 
 
-graphToPRISM g1@(LabGraph gr lab) = "dtmc\n module quipksmodel\n "++result ++"\n"++
+graphToPRISM g1@(LabGraph gr lab) = "// number of Qubits: "++(show cq)++ "\n\n"++ "dtmc\n module quipksmodel\n "++result ++"\n"++
                         (dfsVisitLabGraph (initialState cq) g1 countqbits) ++"\n endmodule\n"
     where 
         (countqbits,result)= runWriter $ enumNodes g1
         cq = countqbits 
 
 -- The main dfs visit of the Model
-dfsVisitLabGraph state g1@(LabGraph gr lab) countqbits = snd $ runWriter $ dfsvg 1 state g1 
+dfsVisitLabGraph state g1@(LabGraph gr lab) countqbits =  b 
     where
 
-        dfsvg node state g@(LabGraph gr lab) = do
-                                visitedAdjProbs <- mapM visit edges
+        notin x = any (x==)
+        (a,b) = runWriter $ dfsvg 1 state g1 [1]
+
+        dfsvg node state g@(LabGraph gr lab) visited = do
+                                visitedAdjProbs <- mapM (visit visited) edges
                                 printRow node visitedAdjProbs 
                                 writer ((0.0,node), "")
             where
-                visit edge =
-                        if ne==1 
-                        then writer(( 1.0, ne), "")
-                        else do (dfsvg ne newState g); writer(( pfa, ne), "")
+                visit visited edge =
+                        if notin ne visited 
+                        then writer(( 1.0, ne), matrixTxt)
+                        else do (dfsvg ne newState g (ne:visited)); writer(( pfa, ne), matrixTxt)
                             where
-                                (ne,m,kind) = traverseArc edge g1 countqbits
+                                matrixTxt = if debugMode then "Apply..."++ name ++ "\n OldState =\n"++ (show state) ++"\n Operator:\n"++ (show m)++"\n" else ""
+                                (name,ne,m,kind) = traverseArc edge g1 countqbits
                                 newState = case kind of Shure -> (m*state)
                                                         ZeroMesure -> normalizeStateVector $ m*state
                                                         OneMesure -> normalizeStateVector $ m*state
