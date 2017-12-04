@@ -172,17 +172,18 @@ debugMode=False
 
 data ActionKind = Shure | ZeroMesure | OneMesure
 
-traverseArc:: Edge -> LabGraph t t1 -> Int -> (String,Int, Matrix (Complex Double), ActionKind)
+traverseArc:: Edge -> LabGraph t t1 -> Int -> (String, Int, Matrix (Complex Double), ActionKind)
 
-traverseArc  (GateEdge a (name, qubits1@(x:qx),  qubits2@(y:qy)) b) g1 countqbits =
+traverseArc  (GateEdge a (name, qubits1@(x:qx),  qubits2) b) g1 countqbits =
              if length qubits2 > 0 
                 then 
-                if length qubits1 ==1 then (name,b,  cGateMulti  [(unQubitId x)] (map (\x->unQubitId x) qubits2) (nameToMatrix name) countqbits , Shure) 
+                if length qubits1 ==1 
+                then (name,b,  cGateMulti  [(unQubitId x)] (map (\x->unQubitId x) qubits2) (nameToMatrix name) countqbits , Shure) 
                 else (name,b,  cGateMulti (map (\x->unQubitId x) qubits1) (map (\x->unQubitId x) qubits2) (nameToMatrix name) countqbits, Shure) 
                 else
                 if length qubits1 ==1 
-                    then (name, b, unaryGateAt (unQubitId x) (nameToMatrix name) countqbits {- identityOnNQB countqbits -} , Shure) --nameToMatrix name
-                    else (name,b, gateMulti (map (\x->unQubitId x) qubits1) (nameToMatrix name) countqbits , Shure)
+                then (name, b, unaryGateAt (unQubitId x) (nameToMatrix name) countqbits {- identityOnNQB countqbits -} , Shure) --nameToMatrix name
+                else (name,b, gateMulti (map (\x->unQubitId x) qubits1) (nameToMatrix name) countqbits , Shure)
                                         
 traverseArc  (MeasureEdge a info_mesure@(qbit_id, bit_id) b) g1 countqbits = 
             if (valueOfBitInState g1 bit_id b)==0 
@@ -214,7 +215,7 @@ enumNodes g1@(LabGraph gr lab)= do
         vert= vertices g1
         numOfQB= length $ lab $ vert!!1
         cou= length vert
-        comment= "\n//" ++ (concat $ map (\x -> " state: "++(show x) ++" bits : " ++ (concat $ map (\y -> show (fst y) ++ " has value " ++ (show (snd y))) $ lab x) ++ "\n// "  ) vert) ++ "\n"
+        comment= "\n//" ++ (concat $ map (\x -> ", state:"++(show x) ++" bits : " ++ (concat $ sort $ map (\y -> ", "++ show (fst y) ++ " has value " ++ (show (snd y))) $ lab x) ++ "\n //"  ) vert) ++ "\n"
         output = "s:[1.."++(show cou)++"] init 1;" ++comment
 
 

@@ -5,9 +5,7 @@ import Quipper
 setup code:
 -}
 
-inputCirc = mythirdcirc
-
-    --groverRec3
+inputCirc = myRnot -- groverRec --branchCirc
 
             --recCirc'
             --groverSix
@@ -26,8 +24,8 @@ exitOn False = return Loop
 
 myRnot :: (Qubit, Qubit ) -> Circ RecAction
 myRnot (q1, q3) = do
-    qnot q3 --`controlled` q2
-    measure q1
+    qnot q1 --`controlled` q2
+    --measure q1
     return Exit
 
 myRnotOne :: (Qubit, Qubit)  -> Circ RecAction
@@ -41,8 +39,6 @@ myRnotOne (q1,q2) = do
 
 myfourthcirc :: Qubit -> Circ RecAction
 myfourthcirc q1 = do
-    hadamard q1
-    qnot q1
     hadamard q1
     qnot q1
     return Exit
