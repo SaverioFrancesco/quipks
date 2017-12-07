@@ -68,9 +68,13 @@ swap_multi t = fromLists  $ map ins origin
 
 ---------------------------------------------------------------------------------------------------------------------
 normalizeStateVector :: ( Floating a, Fractional a, Ord a) => Matrix (Complex a) ->Matrix (Complex a)
-normalizeStateVector vm =  fmap (\x@(a:+b) -> if a==0.0 && b== 0.0 then (x/ (epsilon :+ epsilon)) else  (x / scaling_factor ) ) vm
-        where scaling_factor@( a :+ b) = sqrt $ foldl (+) 0 (map (\x-> x*x) $ toList vm) 
-              epsilon= 0.00000000001 --Parameter for approximating small scaling factor (you don't want to divide by zero)
+normalizeStateVector vm =  fmap (\x@(a:+b) -> if a==0.0 && b== 0.0 then (x/ (epsilon :+ epsilon)) else  (x / (scaling_factor:+0.0) ) ) vm
+        where 
+            --scaling_factor::(Complex a)
+            scaling_factor = sqrt $ foldl (+) 0 (map (\x@(c:+d)-> c*c+d*d) $ toList vm) 
+            epsilon= 0.00000000000001 --Parameter for approximating small scaling factor (you don't want to divide by zero)
+
+
 
 identityOnNQB n = identity $ 2^n
 
@@ -116,15 +120,21 @@ cGate n_controls gate = (identity (2^(n) -2) <|> zero (2^(n) -2) 2) <-> (zero 2 
 
 
 -------------------------------------------------------------------------------------------------------------------
-getProbabilityOfZERO :: (Num a) => Int -> Matrix a -> a
-getProbabilityOfZERO i m = foldl  (\a j -> (j^2)+a ) 0 ([vect!!u  | u <- positions])
+
+--instance Floating a => Num (Complex a) where
+abs1:: (Floating a) => Complex a -> a 
+abs1 (a:+b) = sqrt (a*a +b*b) 
+pow2sqrt (a:+b)=(a*a +b*b)
+
+getProbabilityOfZERO :: (Num a,Floating a) => Int -> Matrix (Complex a) -> a
+getProbabilityOfZERO i m = foldl  (\a j -> (pow2sqrt j) + a ) 0 ([vect!!u  | u <- positions])
                 where{-i in 1..leng -} 
                     vect = ( take (nrows m) $  toList $ transpose m ) 
                     leng= log2 $ nrows m
                     positions = [  ind | ind <-[0..( (nrows m) -1)], even (div ind (2^(leng- i)))  ]
                                         
-getProbabilityOfONE :: (Num a) => Int -> Matrix a -> a
-getProbabilityOfONE i m = foldl  (\a j -> (j^2)+a ) 0 ([vect!!u  | u <- positions])
+getProbabilityOfONE :: (Num a,Floating a) => Int -> Matrix (Complex a) -> a
+getProbabilityOfONE i m = foldl  (\a j -> (pow2sqrt j) + a ) 0 ([vect!!u  | u <- positions])
                 where{-i in 1..leng -}
                     vect = ( take (nrows m) $  toList $ transpose m ) 
                     leng= log2 $ nrows m

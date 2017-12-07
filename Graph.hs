@@ -167,7 +167,7 @@ Mail: mitramdhir[at]gamil.com
 Core code of the tranlator.
 -}
 
-debugMode=False
+debugMode=True
 
 
 data ActionKind = Shure | ZeroMesure | OneMesure
@@ -210,17 +210,17 @@ printRow n lx = writer (n, if(length lx == 0) then "[] s=" ++ (show n) ++ " -> 1
             vp ((p,nn):l:lx) = (show p) ++ ": (s'=" ++ (show nn) ++ ") + " ++ (vp $ l: lx)
 
 enumNodes g1@(LabGraph gr lab)= do
-                    writer(numOfQB +1 {- it counts one less do not know...-},output)
+                    writer(numOfQB  {-+1 it counts one less do not know...-},output)
     where
         vert= vertices g1
         numOfQB= length $ lab $ vert!!1
         cou= length vert
-        comment= "\n//" ++ (concat $ map (\x -> ", state:"++(show x) ++" bits : " ++ (concat $ sort $ map (\y -> ", "++ show (fst y) ++ " has value " ++ (show (snd y))) $ lab x) ++ "\n //"  ) vert) ++ "\n"
+        comment= "\n//" ++ (concat $ map (\x -> ", state:"++(show x) ++" BITS : " ++ (concat $ sort $ map (\y -> ", "++ show (fst y) ++ " has value " ++ (show (snd y))) $ lab x) ++ "\n //"  ) vert) ++ "\n"
         output = "s:[1.."++(show cou)++"] init 1;" ++comment
 
 
 
-graphToPRISM g1@(LabGraph gr lab) = "// number of Qubits: "++(show cq)++ "\n\n"++ "dtmc\n module quipksmodel\n "++result ++"\n"++
+graphToPRISM g1@(LabGraph gr lab) = "\n\n// number of Qubits: "++(show cq)++ "\n\n"++ "dtmc\n module quipksmodel\n "++result ++"\n"++
                         (dfsVisitLabGraph (initialState cq) g1 countqbits) ++"\n endmodule\n"
     where 
         (countqbits,result)= runWriter $ enumNodes g1
@@ -243,11 +243,12 @@ dfsVisitLabGraph state g1@(LabGraph gr lab) countqbits =  b
                         then writer(( 1.0, ne), matrixTxt)
                         else do (dfsvg ne newState g (ne:visited)); writer(( pfa, ne), matrixTxt)
                             where
-                                matrixTxt = if debugMode then "Apply..."++ name ++ "\n OldState =\n"++ (show state) ++"\n Operator:\n"++ (show m)++"\n" else ""
+                                matrixTxt = if debugMode then "Apply..."++ name ++ "\n OldState =\n"++ (show state) ++"\n Operator:\n"++ (show m)++"getting....\n"++(show newUnnormalized)++"\n"++"Normalizing....\n"++(show newState)++"\n" else ""
                                 (name,ne,m,kind) = traverseArc edge g1 countqbits
-                                newState = case kind of Shure -> (m*state)
-                                                        ZeroMesure -> normalizeStateVector $ m*state
-                                                        OneMesure -> normalizeStateVector $ m*state
+                                newState = case kind of Shure -> newUnnormalized
+                                                        ZeroMesure -> normalizeStateVector $ newUnnormalized
+                                                        OneMesure -> normalizeStateVector $ newUnnormalized
+                                newUnnormalized = m*state
                                 pfa= case kind of Shure -> 1.0
                                                   ZeroMesure -> getProbabilityOfZERO 1 state
                                                   OneMesure ->  getProbabilityOfONE 1 state
