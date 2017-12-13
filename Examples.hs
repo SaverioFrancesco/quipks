@@ -5,7 +5,7 @@ import Quipper
 setup code:
 -}
 
-inputCirc = myRnotOne  -- groverRec --branchCirc
+inputCirc = groverRecFive  -- groverRec --branchCirc
 
             --recCirc'
             --groverSix
@@ -466,16 +466,13 @@ groverRec (q1,q2,q3, q4, q5, q6, q7) = do
     
     exitOn $  bool1 -- && not bool2 && not bool3 && not bool4 && not bool5 && not bool6 && not bool7
 
-groverRecFive :: (Qubit, Qubit, Qubit, Qubit, Qubit,Qubit, Qubit, Qubit) -> Circ RecAction
-groverRecFive (q1,q2,q3, q4, q5, q6, q7,q8) = do
+groverRecFive :: (Qubit, Qubit, Qubit, Qubit, Qubit) -> Circ RecAction
+groverRecFive (q1,q2,q3, q4, q5) = do
     qa <- hadamard q1
     qb <- hadamard q2
     qc <- hadamard q3
     qd <- hadamard q4
     qe <- hadamard q5
-    qf <- hadamard q6
-    qg <- hadamard q7
-    qh <- hadamard q8
 
     --startOracle
     qnot_at qe `controlled` [qa, qb, qc, qd]
@@ -492,9 +489,9 @@ groverRecFive (q1,q2,q3, q4, q5, q6, q7,q8) = do
     gate_X_at qc
     gate_X_at qd
 
-    hadamard_at qd
+    hadamard_at qe
     qnot_at qe `controlled` [qa, qb, qc, qd]
-    hadamard_at qd
+    hadamard_at qe
 
     gate_X_at qa
     gate_X_at qb
@@ -505,7 +502,6 @@ groverRecFive (q1,q2,q3, q4, q5, q6, q7,q8) = do
     hadamard_at qb
     hadamard_at qc
     hadamard_at qd
-
     hadamard_at qe
 
     m1 <- measure qa
@@ -513,9 +509,6 @@ groverRecFive (q1,q2,q3, q4, q5, q6, q7,q8) = do
     m3 <- measure qc
     m4 <- measure qd
     m5 <- measure qe
-    m6 <- measure qf
-    m7 <- measure qg
-    m8 <- measure qh
     
 
     bool1 <- dynamic_lift m1
@@ -523,9 +516,6 @@ groverRecFive (q1,q2,q3, q4, q5, q6, q7,q8) = do
     bool3 <- dynamic_lift m3
     bool4 <- dynamic_lift m4
     bool5 <- dynamic_lift m5
-    bool6 <- dynamic_lift m6
-    bool7 <- dynamic_lift m7
-    bool8 <- dynamic_lift m8
 
     --if bool1 && (not bool2) && (not bool3) && (not bool4) && (not bool5) && (not bool6)
     --   then return (qa,qb,qc,qd,qe,qf,qg)

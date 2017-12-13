@@ -48,9 +48,9 @@ main = do
       
 
       --writeFile (f ++ ".pm") $
-      putStrLn $ (graphToPRISM $ labGraphFromTree $ tree)
+      writeFile (f ++ ".pm") $ (graphToPRISM $ labGraphFromTree $ tree)
       -- show $ [getProbabilityOfONE i $(unaryGateAt i (measure BR) 2)* h1 * x1 * (initialState 2)| i <- [1..2]]
-      --( g++ ".dot") $
+      writeFile ( g++ ".dot") $  (showGraphViz $ labGraphFromTree $ tree)
       --putStrLn $  (showGraphViz $ labGraphFromTree $ tree)
       --show $ [getProbabilityOfONE i $(unaryGateAt i (measure BR) 2)*(unaryGateAt i (measure BR) 2)* (unaryGateAt i (measure BR) 2)*  h1 * x1 * (initialState 2)| i <- [1..2]]--
        where

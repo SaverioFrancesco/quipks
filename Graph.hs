@@ -167,7 +167,7 @@ Mail: mitramdhir[at]gamil.com
 Core code of the tranlator.
 -}
 
-debugMode=True
+debugMode=False
 
 
 data ActionKind = Shure | ZeroMesure | OneMesure

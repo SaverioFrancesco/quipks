@@ -71,7 +71,7 @@ normalizeStateVector :: ( Floating a, Fractional a, Ord a) => Matrix (Complex a)
 normalizeStateVector vm =  fmap (\x@(a:+b) -> if a==0.0 && b== 0.0 then (x/ (epsilon :+ epsilon)) else  (x / (scaling_factor:+0.0) ) ) vm
         where 
             --scaling_factor::(Complex a)
-            scaling_factor = sqrt $ foldl (+) 0 (map (\x@(c:+d)-> c*c+d*d) $ toList vm) 
+            scaling_factor = sqrt $ foldl (+) 0 (map pow2sqrt $ toList vm) 
             epsilon= 0.00000000000001 --Parameter for approximating small scaling factor (you don't want to divide by zero)
 
 
